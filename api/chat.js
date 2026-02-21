@@ -7,14 +7,30 @@ const supabase = createClient(
 
 export default async function handler(req, res) {
 
-  const { data, error } = await supabase
-    .from('products')
-    .select('*')
-    .limit(5)
-
-  if (error) {
-    return res.status(500).json({ error })
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: "Only POST allowed" })
   }
 
-  return res.status(200).json(data)
+  const { user_id, message } = req.body
+
+  // Lưu message user
+  await supabase.from('conversations').insert({
+    user_id,
+    message,
+    role: 'user'
+  })
+
+  // Tạm thời trả lời mẫu
+  const botReply = "Chào bạn 👋 tôi là chatbot AI"
+
+  // Lưu message bot
+  await supabase.from('conversations').insert({
+    user_id,
+    message: botReply,
+    role: 'assistant'
+  })
+
+  return res.status(200).json({
+    reply: botReply
+  })
 }

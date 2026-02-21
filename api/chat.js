@@ -13,22 +13,31 @@ export default async function handler(req, res) {
 
   const { user_id, message } = req.body
 
-  // Lưu message user
-  await supabase.from('conversations').insert({
-    user_id,
-    message,
-    role: 'user'
-  })
+  const insertUser = await supabase
+    .from('conversations')
+    .insert({
+      user_id,
+      message,
+      role: 'user'
+    })
 
-  // Tạm thời trả lời mẫu
+  if (insertUser.error) {
+    return res.status(500).json({ error: insertUser.error })
+  }
+
   const botReply = "Chào bạn 👋 tôi là chatbot AI"
 
-  // Lưu message bot
-  await supabase.from('conversations').insert({
-    user_id,
-    message: botReply,
-    role: 'assistant'
-  })
+  const insertBot = await supabase
+    .from('conversations')
+    .insert({
+      user_id,
+      message: botReply,
+      role: 'assistant'
+    })
+
+  if (insertBot.error) {
+    return res.status(500).json({ error: insertBot.error })
+  }
 
   return res.status(200).json({
     reply: botReply
